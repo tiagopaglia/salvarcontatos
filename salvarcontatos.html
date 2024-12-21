@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Números</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .result {
+            margin: 10px 0;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Números</h1>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="inputNumber" placeholder="Digite o número no formato (XX) XXXX-XXXX ou +55 XX XXXXX-XXXX">
+        </div>
+        <div class="action-buttons">
+            <button id="pasteButton">Colar Número</button>
+            <button id="generateButton">Gerar Números</button>
+        </div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Função para colar o número da área de transferência
+        document.getElementById('pasteButton').addEventListener('click', async function () {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('inputNumber').value = text;
+            } catch (err) {
+                alert('Não foi possível colar o número. Certifique-se de permitir o acesso à área de transferência.');
+            }
+        });
+
+        // Função para gerar os números formatados
+        document.getElementById('generateButton').addEventListener('click', function () {
+            const input = document.getElementById('inputNumber').value;
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+
+            // Aceitar números em diferentes formatos e corrigir para o padrão esperado
+            let sanitizedInput = input.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+
+            // Remover código do país se necessário
+            if (sanitizedInput.startsWith('55') && sanitizedInput.length > 11) {
+                sanitizedInput = sanitizedInput.slice(2);
+            }
+
+            if (sanitizedInput.length === 10 || sanitizedInput.length === 11) {
+                const areaCode = sanitizedInput.slice(0, 2);
+                const firstPart = sanitizedInput.slice(2, sanitizedInput.length - 4);
+                const secondPart = sanitizedInput.slice(sanitizedInput.length - 4);
+
+                const formats = [
+                    `(${areaCode}) ${firstPart}-${secondPart}`,
+                    `(${areaCode}) 9${firstPart}-${secondPart}`,
+                    `+55 (${areaCode}) ${firstPart}-${secondPart}`,
+                    `+55 (${areaCode}) 9${firstPart}-${secondPart}`
+                ];
+
+                formats.forEach((format) => {
+                    const div = document.createElement('div');
+                    div.className = 'result';
+
+                    const span = document.createElement('span');
+                    span.textContent = format;
+
+                    const button = document.createElement('button');
+                    button.textContent = 'Copiar';
+                    button.addEventListener('click', () => {
+                        navigator.clipboard.writeText(format);
+                    });
+
+                    div.appendChild(span);
+                    div.appendChild(button);
+                    results.appendChild(div);
+                });
+            } else {
+                alert('Por favor, insira um número válido com pelo menos 10 ou 11 dígitos.');
+            }
+        });
+    </script>
+</body>
+</html>
